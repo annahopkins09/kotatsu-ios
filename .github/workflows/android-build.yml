@@ -59,17 +59,21 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Install Android SDK packages
+      - name: Set up Android SDK
         run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager --install \
+          ANDROID_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "${ANDROID_ROOT}/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "${ANDROID_ROOT}/platform-tools" >> $GITHUB_PATH
+          SDKMANAGER="${ANDROID_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+          yes 2>/dev/null | "${SDKMANAGER}" --licenses || true
+          "${SDKMANAGER}" --install \
             "platform-tools" \
             "platforms;android-36" \
             "build-tools;35.0.0"
 
       - name: Configure local.properties
         working-directory: kotatsu-ios
-        run: echo "sdk.dir=${ANDROID_HOME}" >> local.properties
+        run: echo "sdk.dir=${ANDROID_HOME:-/usr/local/lib/android/sdk}" >> local.properties
 
       - name: Resolve keystore for release signing
         env:
