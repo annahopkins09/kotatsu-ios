@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+	android:width="28dp"
+	android:height="28dp"
+	android:tint="?android:attr/textColorPrimary"
+	android:viewportWidth="28"
+	android:viewportHeight="28">
+	<!-- SF Pro faceid glyph -->
+	<path
+		android:strokeColor="#FFFFFFFF"
+		android:strokeWidth="2"
+		android:strokeLineCap="round"
+		android:strokeLineJoin="round"
+		android:pathData="M3,9 L3,6 C3,4.343 4.343,3 6,3 L9,3 M19,3 L22,3 C23.657,3 25,4.343 25,6 L25,9 M3,19 L3,22 C3,23.657 4.343,25 6,25 L9,25 M19,25 L22,25 C23.657,25 25,23.657 25,22 L25,19" />
+	<path
+		android:strokeColor="#FFFFFFFF"
+		android:strokeWidth="2"
+		android:strokeLineCap="round"
+		android:pathData="M9.5,10.5 L9.5,12 M18.5,10.5 L18.5,12 M14,11 L14,14.5 L12.5,14.5 M10,18 C11.5,19.5 16.5,19.5 18,18" />
+</vector>

@@ -1,11 +1,16 @@
 package org.koitharu.kotatsu.core.ui.util
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
 import android.animation.TimeInterpolator
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
+import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.animation.AnimationUtils
+import android.view.animation.DecelerateInterpolator
 import android.view.animation.PathInterpolator
 import androidx.annotation.AnimRes
 import androidx.core.view.doOnDetach
@@ -168,6 +173,62 @@ object IosUiHelper {
 		animate().cancel()
 		resetIosAnimationState()
 		setOnTouchListener(null)
+	}
+
+	/**
+	 * Classical iOS Passcode error shake animation.
+	 * Performs a rapid, damped horizontal oscillation with haptic feedback.
+	 */
+	fun View.shakeIos(onEnd: (() -> Unit)? = null) {
+		withAnimationCleanup {
+			val animator = ObjectAnimator.ofFloat(
+				this,
+				"translationX",
+				0f, -24f, 22f, -18f, 14f, -8f, 4f, 0f,
+			).apply {
+				duration = 450L
+				interpolator = DecelerateInterpolator()
+				addListener(object : AnimatorListenerAdapter() {
+					override fun onAnimationEnd(animation: Animator) {
+						translationX = 0f
+						onEnd?.invoke()
+					}
+				})
+			}
+			animator.start()
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+				performHapticFeedback(HapticFeedbackConstants.REJECT)
+			} else {
+				performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+			}
+		}
+	}
+
+	/**
+	 * Animates an iOS PIN dot fill or unfill state with a crisp spring pulse.
+	 */
+	fun View.pulsePinDot(filled: Boolean) {
+		withAnimationCleanup {
+			if (filled) {
+				scaleX = 0.5f
+				scaleY = 0.5f
+				animate()
+					.scaleX(1f)
+					.scaleY(1f)
+					.setDuration(180L)
+					.setInterpolator(springInterpolator)
+					.setListener(null)
+					.start()
+			} else {
+				animate()
+					.scaleX(1f)
+					.scaleY(1f)
+					.setDuration(120L)
+					.setInterpolator(easeOutInterpolator)
+					.setListener(null)
+					.start()
+			}
+		}
 	}
 
 	private fun View.withAnimationCleanup(block: View.() -> Unit) {

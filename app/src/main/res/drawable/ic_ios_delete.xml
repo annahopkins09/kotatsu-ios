@@ -1,0 +1,11 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+	android:width="28dp"
+	android:height="28dp"
+	android:tint="?android:attr/textColorPrimary"
+	android:viewportWidth="28"
+	android:viewportHeight="28">
+	<!-- SF Pro delete.backward glyph -->
+	<path
+		android:fillColor="#FFFFFFFF"
+		android:pathData="M23,6 L9.5,6 C8.4,6 7.4,6.6 6.8,7.5 L1.8,14 L6.8,20.5 C7.4,21.4 8.4,22 9.5,22 L23,22 C24.7,22 26,20.7 26,19 L26,9 C26,7.3 24.7,6 23,6 Z M20.7,16.3 L19.3,17.7 L15.5,13.9 L11.7,17.7 L10.3,16.3 L14.1,12.5 L10.3,8.7 L11.7,7.3 L15.5,11.1 L19.3,7.3 L20.7,8.7 L16.9,12.5 L20.7,16.3 Z" />
+</vector>

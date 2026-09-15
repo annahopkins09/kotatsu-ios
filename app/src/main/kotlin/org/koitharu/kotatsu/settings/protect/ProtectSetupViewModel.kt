@@ -41,11 +41,17 @@ class ProtectSetupViewModel @Inject constructor(
 			if (firstPassword.value == password) {
 				settings.appPassword = password.md5()
 				settings.isAppPasswordNumeric = password.isNumeric()
+				settings.appPasswordLength = password.length
 				onPasswordSet.call(Unit)
 			} else {
 				onPasswordMismatch.call(Unit)
 			}
 		}
+	}
+
+	fun reset() {
+		firstPassword.value = null
+		onClearText.call(Unit)
 	}
 
 	fun setBiometricEnabled(isEnabled: Boolean) {

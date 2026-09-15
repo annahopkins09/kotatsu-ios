@@ -5,93 +5,489 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
+	android:background="@color/ios_grouped_background"
 	android:padding="@dimen/screen_padding">
+
+	<ImageView
+		android:id="@+id/image_lock"
+		android:layout_width="@dimen/ios_lock_icon_size"
+		android:layout_height="@dimen/ios_lock_icon_size"
+		android:layout_marginTop="20dp"
+		android:contentDescription="@null"
+		android:src="@drawable/ic_ios_lock"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="parent"
+		app:tint="@color/ios_label_primary" />
 
 	<TextView
 		android:id="@+id/textView_title"
-		android:layout_width="0dp"
-		android:layout_height="wrap_content"
-		android:layout_marginTop="8dp"
-		android:drawablePadding="16dp"
-		android:gravity="center_horizontal"
-		android:text="@string/protect_application"
-		android:textAppearance="?textAppearanceHeadline5"
-		app:drawableTint="?colorPrimary"
-		app:drawableTopCompat="@drawable/ic_lock"
-		app:layout_constraintEnd_toEndOf="parent"
-		app:layout_constraintStart_toStartOf="parent"
-		app:layout_constraintTop_toTopOf="parent" />
-
-	<TextView
-		android:id="@+id/textView_subtitle"
-		android:layout_width="0dp"
+		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginTop="12dp"
 		android:gravity="center_horizontal"
+		android:text="@string/ios_set_passcode"
+		android:textAppearance="@style/TextAppearance.Kotatsu.iOS.Title1"
+		android:textColor="@color/ios_label_primary"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@id/image_lock" />
+
+	<TextView
+		android:id="@+id/textView_subtitle"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="8dp"
+		android:gravity="center_horizontal"
 		android:text="@string/protect_application_subtitle"
-		android:textAppearance="?textAppearanceSubtitle1"
+		android:textAppearance="@style/TextAppearance.Kotatsu.iOS.Subhead"
+		android:textColor="@color/ios_label_secondary"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toBottomOf="@id/textView_title" />
 
-	<com.google.android.material.textfield.TextInputLayout
-		android:id="@+id/layout_password"
-		style="?textInputOutlinedStyle"
-		android:layout_width="0dp"
+	<!-- PIN Dots indicator row -->
+	<LinearLayout
+		android:id="@+id/layout_pin_dots"
+		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_marginTop="30dp"
-		app:errorIconDrawable="@null"
-		app:helperText="@string/password_length_hint"
-		app:hintEnabled="false"
+		android:layout_marginTop="20dp"
+		android:gravity="center"
+		android:orientation="horizontal"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toBottomOf="@id/textView_subtitle">
 
+		<ImageView
+			android:id="@+id/pin_dot_1"
+			android:layout_width="@dimen/ios_pin_dot_size"
+			android:layout_height="@dimen/ios_pin_dot_size"
+			android:layout_marginHorizontal="@dimen/ios_pin_dot_margin"
+			android:background="@drawable/bg_ios_pin_dot_empty"
+			android:contentDescription="@null" />
+
+		<ImageView
+			android:id="@+id/pin_dot_2"
+			android:layout_width="@dimen/ios_pin_dot_size"
+			android:layout_height="@dimen/ios_pin_dot_size"
+			android:layout_marginHorizontal="@dimen/ios_pin_dot_margin"
+			android:background="@drawable/bg_ios_pin_dot_empty"
+			android:contentDescription="@null" />
+
+		<ImageView
+			android:id="@+id/pin_dot_3"
+			android:layout_width="@dimen/ios_pin_dot_size"
+			android:layout_height="@dimen/ios_pin_dot_size"
+			android:layout_marginHorizontal="@dimen/ios_pin_dot_margin"
+			android:background="@drawable/bg_ios_pin_dot_empty"
+			android:contentDescription="@null" />
+
+		<ImageView
+			android:id="@+id/pin_dot_4"
+			android:layout_width="@dimen/ios_pin_dot_size"
+			android:layout_height="@dimen/ios_pin_dot_size"
+			android:layout_marginHorizontal="@dimen/ios_pin_dot_margin"
+			android:background="@drawable/bg_ios_pin_dot_empty"
+			android:contentDescription="@null" />
+	</LinearLayout>
+
+	<!-- Passcode Options Button -->
+	<TextView
+		android:id="@+id/button_passcode_options"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="12dp"
+		android:background="?android:attr/selectableItemBackground"
+		android:clickable="true"
+		android:focusable="true"
+		android:padding="8dp"
+		android:text="@string/ios_passcode_options"
+		android:textColor="@color/ios_accent_teal"
+		android:textSize="14sp"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@id/layout_pin_dots" />
+
+	<!-- iOS 18 3x4 Circular Keypad -->
+	<LinearLayout
+		android:id="@+id/layout_keypad"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:gravity="center"
+		android:orientation="vertical"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@id/button_passcode_options"
+		app:layout_constraintVertical_bias="0.55">
+
+		<!-- Row 1: 1, 2, 3 -->
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:gravity="center"
+			android:orientation="horizontal">
+
+			<LinearLayout
+				android:id="@+id/key_1"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:background="@drawable/bg_ios_keypad_button"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:orientation="vertical">
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadNumber"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="1" />
+			</LinearLayout>
+
+			<LinearLayout
+				android:id="@+id/key_2"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:layout_marginStart="@dimen/ios_keypad_button_margin_h"
+				android:layout_marginEnd="@dimen/ios_keypad_button_margin_h"
+				android:background="@drawable/bg_ios_keypad_button"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:orientation="vertical">
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadNumber"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="2" />
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadLetters"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="A B C" />
+			</LinearLayout>
+
+			<LinearLayout
+				android:id="@+id/key_3"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:background="@drawable/bg_ios_keypad_button"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:orientation="vertical">
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadNumber"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="3" />
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadLetters"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="D E F" />
+			</LinearLayout>
+		</LinearLayout>
+
+		<!-- Row 2: 4, 5, 6 -->
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="@dimen/ios_keypad_button_margin_v"
+			android:gravity="center"
+			android:orientation="horizontal">
+
+			<LinearLayout
+				android:id="@+id/key_4"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:background="@drawable/bg_ios_keypad_button"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:orientation="vertical">
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadNumber"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="4" />
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadLetters"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="G H I" />
+			</LinearLayout>
+
+			<LinearLayout
+				android:id="@+id/key_5"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:layout_marginStart="@dimen/ios_keypad_button_margin_h"
+				android:layout_marginEnd="@dimen/ios_keypad_button_margin_h"
+				android:background="@drawable/bg_ios_keypad_button"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:orientation="vertical">
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadNumber"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="5" />
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadLetters"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="J K L" />
+			</LinearLayout>
+
+			<LinearLayout
+				android:id="@+id/key_6"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:background="@drawable/bg_ios_keypad_button"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:orientation="vertical">
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadNumber"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="6" />
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadLetters"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="M N O" />
+			</LinearLayout>
+		</LinearLayout>
+
+		<!-- Row 3: 7, 8, 9 -->
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="@dimen/ios_keypad_button_margin_v"
+			android:gravity="center"
+			android:orientation="horizontal">
+
+			<LinearLayout
+				android:id="@+id/key_7"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:background="@drawable/bg_ios_keypad_button"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:orientation="vertical">
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadNumber"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="7" />
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadLetters"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="P Q R S" />
+			</LinearLayout>
+
+			<LinearLayout
+				android:id="@+id/key_8"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:layout_marginStart="@dimen/ios_keypad_button_margin_h"
+				android:layout_marginEnd="@dimen/ios_keypad_button_margin_h"
+				android:background="@drawable/bg_ios_keypad_button"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:orientation="vertical">
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadNumber"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="8" />
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadLetters"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="T U V" />
+			</LinearLayout>
+
+			<LinearLayout
+				android:id="@+id/key_9"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:background="@drawable/bg_ios_keypad_button"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:orientation="vertical">
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadNumber"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="9" />
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadLetters"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="W X Y Z" />
+			</LinearLayout>
+		</LinearLayout>
+
+		<!-- Row 4: Cancel, 0, Action (Delete) -->
+		<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="@dimen/ios_keypad_button_margin_v"
+			android:gravity="center"
+			android:orientation="horizontal">
+
+			<TextView
+				android:id="@+id/button_cancel"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:background="?android:attr/selectableItemBackgroundBorderless"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:text="@android:string/cancel"
+				android:textColor="@color/ios_label_primary"
+				android:textSize="16sp" />
+
+			<LinearLayout
+				android:id="@+id/key_0"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:layout_marginStart="@dimen/ios_keypad_button_margin_h"
+				android:layout_marginEnd="@dimen/ios_keypad_button_margin_h"
+				android:background="@drawable/bg_ios_keypad_button"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:orientation="vertical">
+
+				<TextView
+					style="@style/TextAppearance.Kotatsu.iOS.KeypadNumber"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="0" />
+			</LinearLayout>
+
+			<FrameLayout
+				android:id="@+id/button_keypad_action"
+				android:layout_width="@dimen/ios_keypad_button_size"
+				android:layout_height="@dimen/ios_keypad_button_size"
+				android:background="?android:attr/selectableItemBackgroundBorderless"
+				android:clickable="true"
+				android:focusable="true">
+
+				<ImageView
+					android:id="@+id/image_keypad_action"
+					android:layout_width="28dp"
+					android:layout_height="28dp"
+					android:layout_gravity="center"
+					android:contentDescription="@string/ios_delete"
+					android:src="@drawable/ic_ios_delete"
+					app:tint="@color/ios_label_primary" />
+			</FrameLayout>
+		</LinearLayout>
+	</LinearLayout>
+
+	<!-- Biometric Switch Card (iOS 18 glass card) -->
+	<LinearLayout
+		android:id="@+id/layout_biometric_card"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:layout_marginHorizontal="16dp"
+		android:layout_marginBottom="16dp"
+		android:background="@drawable/bg_ios_glass_card"
+		android:gravity="center_vertical"
+		android:orientation="horizontal"
+		android:paddingHorizontal="16dp"
+		android:paddingVertical="10dp"
+		android:visibility="gone"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		tools:visibility="visible">
+
+		<com.google.android.material.materialswitch.MaterialSwitch
+			android:id="@+id/switch_biometric"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:checked="true"
+			android:text="@string/use_fingerprint"
+			android:textAppearance="@style/TextAppearance.Kotatsu.iOS.Body"
+			android:textColor="@color/ios_label_primary" />
+	</LinearLayout>
+
+	<!-- Alphanumeric fallback input field (visible only if non-numeric mode) -->
+	<com.google.android.material.textfield.TextInputLayout
+		android:id="@+id/layout_password"
+		style="@style/Widget.Kotatsu.iOS.PasscodeInput"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:layout_marginHorizontal="32dp"
+		android:layout_marginTop="32dp"
+		android:visibility="gone"
+		app:errorIconDrawable="@null"
+		app:helperText="@string/password_length_hint"
+		app:helperTextTextColor="@color/ios_label_secondary"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@id/textView_subtitle"
+		app:passwordToggleEnabled="true"
+		app:passwordToggleTint="@color/ios_label_secondary">
+
 		<com.google.android.material.textfield.TextInputEditText
 			android:id="@+id/edit_password"
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:gravity="center_horizontal"
+			android:layout_height="48dp"
+			android:background="@android:color/transparent"
+			android:gravity="center"
 			android:imeOptions="actionDone"
 			android:importantForAutofill="no"
 			android:inputType="textPassword|textNoSuggestions"
 			android:maxLength="24"
 			android:singleLine="true"
 			android:textAlignment="center"
-			android:textSize="16sp"
+			android:textColor="@color/ios_label_primary"
+			android:textSize="18sp"
 			tools:text="1234" />
-
 	</com.google.android.material.textfield.TextInputLayout>
-
-	<com.google.android.material.materialswitch.MaterialSwitch
-		android:id="@+id/switch_biometric"
-		android:layout_width="0dp"
-		android:layout_height="wrap_content"
-		android:layout_marginTop="16dp"
-		android:checked="true"
-		android:text="@string/use_fingerprint"
-		android:visibility="gone"
-		app:layout_constraintEnd_toEndOf="parent"
-		app:layout_constraintStart_toStartOf="parent"
-		app:layout_constraintTop_toBottomOf="@id/layout_password"
-		tools:visibility="visible" />
-
-	<com.google.android.material.button.MaterialButton
-		android:id="@+id/button_cancel"
-		style="?materialButtonOutlinedStyle"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="@android:string/cancel"
-		app:layout_constraintBottom_toBottomOf="parent"
-		app:layout_constraintStart_toStartOf="parent" />
 
 	<com.google.android.material.button.MaterialButton
 		android:id="@+id/button_next"
-		android:layout_width="wrap_content"
+		style="@style/Widget.Kotatsu.iOS.Button.Filled"
+		android:layout_width="0dp"
 		android:layout_height="wrap_content"
+		android:layout_marginHorizontal="32dp"
+		android:layout_marginBottom="24dp"
 		android:enabled="false"
 		android:text="@string/next"
+		android:visibility="gone"
 		app:layout_constraintBottom_toBottomOf="parent"
-		app:layout_constraintEnd_toEndOf="parent" />
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

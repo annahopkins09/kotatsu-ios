@@ -132,6 +132,15 @@
     <string name="protect_application_summary">Ask for password when starting Kotatsu</string>
     <string name="repeat_password">Repeat the password</string>
     <string name="passwords_mismatch">Mismatching passwords</string>
+    <string name="ios_enter_passcode">Enter Passcode</string>
+    <string name="ios_set_passcode">Set Passcode</string>
+    <string name="ios_verify_passcode">Verify Passcode</string>
+    <string name="ios_reenter_passcode">Re-enter your passcode</string>
+    <string name="ios_incorrect_passcode">Incorrect Passcode</string>
+    <string name="ios_passcode_options">Passcode Options</string>
+    <string name="ios_use_alphanumeric">Custom Alphanumeric Code</string>
+    <string name="ios_use_numeric">4-Digit Numeric Code</string>
+    <string name="ios_delete">Delete</string>
     <string name="about">About</string>
     <string name="app_version">Version %s</string>
     <string name="check_for_updates">Check for updates</string>

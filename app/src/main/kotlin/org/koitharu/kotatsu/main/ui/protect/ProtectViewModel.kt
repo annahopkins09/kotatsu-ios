@@ -29,6 +29,9 @@ class ProtectViewModel @Inject constructor(
 	val isNumericPassword
 		get() = settings.isAppPasswordNumeric
 
+	val passwordLength
+		get() = settings.appPasswordLength
+
 	fun tryUnlock(password: String) {
 		if (job?.isActive == true) {
 			return

@@ -45,4 +45,14 @@
 	<dimen name="ios_chapter_item_min_height">64dp</dimen>
 	<dimen name="ios_chapter_item_padding_v">14dp</dimen>
 	<dimen name="ios_chapter_item_padding_h">18dp</dimen>
+
+	<!-- Passcode & Keypad (iOS 18) -->
+	<dimen name="ios_keypad_button_size">75dp</dimen>
+	<dimen name="ios_keypad_button_margin_h">14dp</dimen>
+	<dimen name="ios_keypad_button_margin_v">8dp</dimen>
+	<dimen name="ios_keypad_number_size">32sp</dimen>
+	<dimen name="ios_keypad_letters_size">9.5sp</dimen>
+	<dimen name="ios_pin_dot_size">13dp</dimen>
+	<dimen name="ios_pin_dot_margin">10dp</dimen>
+	<dimen name="ios_lock_icon_size">32dp</dimen>
 </resources>

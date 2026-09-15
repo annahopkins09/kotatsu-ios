@@ -46,4 +46,13 @@
 	<color name="ios_accent_orange">#FF9F0A</color>
 	<color name="ios_accent_red">#FF453A</color>
 	<color name="ios_overlay_scrim">#66000000</color>
+
+	<!-- Keypad & Passcode Lock screen (iOS 18) -->
+	<color name="ios_keypad_button_bg">#2C2C2E</color>
+	<color name="ios_keypad_button_bg_pressed">#48484A</color>
+	<color name="ios_keypad_button_ripple">#40FFFFFF</color>
+	<color name="ios_keypad_letters">#99EBEBF5</color>
+	<color name="ios_pin_dot_empty_stroke">#4DEBEBF5</color>
+	<color name="ios_pin_dot_filled">#FFFFFF</color>
+	<color name="ios_pin_dot_error">#FF453A</color>
 </resources>

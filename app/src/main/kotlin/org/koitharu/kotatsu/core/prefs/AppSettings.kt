@@ -272,6 +272,10 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		get() = prefs.getBoolean(KEY_APP_PASSWORD_NUMERIC, false)
 		set(value) = prefs.edit { putBoolean(KEY_APP_PASSWORD_NUMERIC, value) }
 
+	var appPasswordLength: Int
+		get() = prefs.getInt(KEY_APP_PASSWORD_LENGTH, 4)
+		set(value) = prefs.edit { putInt(KEY_APP_PASSWORD_LENGTH, value) }
+
 	val searchSuggestionTypes: Set<SearchSuggestionType>
 		get() = prefs.getStringSet(KEY_SEARCH_SUGGESTION_TYPES, null)?.let { stringSet ->
 			stringSet.mapNotNullTo(EnumSet.noneOf(SearchSuggestionType::class.java)) { x ->
@@ -718,6 +722,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_READER_CROP = "reader_crop"
 		const val KEY_APP_PASSWORD = "app_password"
 		const val KEY_APP_PASSWORD_NUMERIC = "app_password_num"
+		const val KEY_APP_PASSWORD_LENGTH = "app_password_len"
 		const val KEY_PROTECT_APP = "protect_app"
 		const val KEY_PROTECT_APP_BIOMETRIC = "protect_app_bio"
 		const val KEY_ZOOM_MODE = "zoom_mode"

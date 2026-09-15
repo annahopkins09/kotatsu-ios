@@ -160,4 +160,28 @@
 		<item name="android:textColor">@android:color/white</item>
 	</style>
 
+	<!-- iOS 18 Keypad & Passcode styles -->
+	<style name="TextAppearance.Kotatsu.iOS.KeypadNumber" parent="TextAppearance.Material3.HeadlineLarge">
+		<item name="android:textSize">@dimen/ios_keypad_number_size</item>
+		<item name="android:textColor">@color/ios_label_primary</item>
+		<item name="android:fontFamily">sans-serif</item>
+		<item name="android:includeFontPadding">false</item>
+	</style>
+
+	<style name="TextAppearance.Kotatsu.iOS.KeypadLetters" parent="TextAppearance.Material3.LabelSmall">
+		<item name="android:textSize">@dimen/ios_keypad_letters_size</item>
+		<item name="android:textColor">@color/ios_keypad_letters</item>
+		<item name="android:fontFamily">sans-serif-medium</item>
+		<item name="android:letterSpacing">0.15</item>
+		<item name="android:includeFontPadding">false</item>
+	</style>
+
+	<style name="Widget.Kotatsu.iOS.PasscodeInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+		<item name="boxBackgroundMode">none</item>
+		<item name="boxStrokeWidth">0dp</item>
+		<item name="boxStrokeWidthFocused">0dp</item>
+		<item name="hintEnabled">false</item>
+		<item name="android:background">@drawable/bg_ios_passcode_input</item>
+	</style>
+
 </resources>
