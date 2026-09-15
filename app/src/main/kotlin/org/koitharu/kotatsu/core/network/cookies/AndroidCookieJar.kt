@@ -5,6 +5,7 @@ import androidx.annotation.WorkerThread
 import androidx.core.util.Predicate
 import okhttp3.Cookie
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -63,6 +64,9 @@ class AndroidCookieJar : MutableCookieJar {
 	}
 
 	companion object {
+		private const val TAG = "CaptchaCookies"
+		private const val CF_CLEARANCE = "cf_clearance"
+
 		fun safeFlush(cookieManager: CookieManager) {
 			try {
 				cookieManager.flush()
@@ -117,6 +121,116 @@ class AndroidCookieJar : MutableCookieJar {
 				return parts.takeLast(2).joinToString(".")
 			}
 			return host
+		}
+
+		/**
+		 * Direct [Cookie.Builder] fallback for one `name=value` piece of
+		 * [CookieManager.getCookie] output. Unlike [parseWebViewCookie] it never depends on
+		 * [Cookie.parse] accepting the synthesised attribute string, so a clearance value
+		 * with unexpected characters still produces a sendable cookie instead of being
+		 * silently dropped (which surfaced as "solved but cf_clearance never saved").
+		 */
+		fun buildWebViewCookie(url: HttpUrl, rawPart: String): Cookie? {
+			val trimmed = rawPart.trim()
+			if (trimmed.isEmpty()) return null
+			val eq = trimmed.indexOf('=')
+			if (eq <= 0) return null
+			val name = trimmed.substring(0, eq).trim()
+			var value = trimmed.substring(eq + 1).trim()
+			if (name.isEmpty()) return null
+			if (value.startsWith("\"") && value.endsWith("\"") && value.length >= 2) {
+				value = value.substring(1, value.length - 1)
+			}
+			if (name == CF_CLEARANCE && value.isBlank()) {
+				// An emptied clearance is purge residue, never a solve. Saving it would
+				// overwrite the fresh value the jar may already hold.
+				return null
+			}
+			if (value.isEmpty()) return null
+			val topDomain = runCatching { url.topPrivateDomain() }.getOrNull()
+				?: extractRootDomain(url.host)
+			return try {
+				Cookie.Builder()
+					.name(name)
+					.value(value)
+					.domain(topDomain)
+					.path("/")
+					.apply { if (url.isHttps) secure() }
+					.build()
+			} catch (_: IllegalArgumentException) {
+				try {
+					Cookie.Builder()
+						.name(name)
+						.value(value)
+						.hostOnlyDomain(url.host)
+						.path("/")
+						.apply { if (url.isHttps) secure() }
+						.build()
+				} catch (_: IllegalArgumentException) {
+					null
+				}
+			}
+		}
+
+		/**
+		 * Pull every cookie the WebView currently holds for [urlStrings] into [cookieJar].
+		 *
+		 * Queries each URL (challenge URL, the WebView's live URL, domain root) because
+		 * [CookieManager.getCookie] filters by host: clearance set on `www.site.com`
+		 * is invisible when asked only for `site.com` and vice versa. Each piece is
+		 * parsed via [parseWebViewCookie] with [buildWebViewCookie] as fallback so a
+		 * value [Cookie.parse] rejects is still saved.
+		 *
+		 * @return the `cf_clearance` value seen in the WebView, if any (never logged).
+		 */
+		fun syncFromWebView(
+			cookieJar: MutableCookieJar,
+			vararg urlStrings: String?,
+		): String? {
+			val manager = try {
+				CookieManager.getInstance()
+			} catch (e: Exception) {
+				android.util.Log.w(TAG, "CookieManager unavailable", e)
+				return null
+			}
+			val httpUrls = urlStrings.filterNotNull()
+				.mapNotNull { it.toHttpUrlOrNull() }
+				.distinct()
+			if (httpUrls.isEmpty()) return null
+			var clearance: String? = null
+			var saved = 0
+			for (httpUrl in httpUrls) {
+				val raw = runCatching { manager.getCookie(httpUrl.toString()) }.getOrNull()
+					?: continue
+				val parsed = ArrayList<Cookie>()
+				for (part in raw.split(";")) {
+					val cookie = parseWebViewCookie(httpUrl, part)
+						?: buildWebViewCookie(httpUrl, part)
+						?: continue
+					if (cookie.name == CF_CLEARANCE) {
+						// Never persist an emptied clearance: it is purge residue and
+						// would overwrite the fresh value the jar may already hold.
+						if (cookie.value.isBlank()) continue
+						clearance = cookie.value
+					}
+					parsed.add(cookie)
+				}
+				if (parsed.isNotEmpty()) {
+					runCatching { cookieJar.saveFromResponse(httpUrl, parsed) }
+					saved += parsed.size
+				}
+			}
+			if (saved > 0) {
+				safeFlush(manager)
+			}
+			if (android.util.Log.isLoggable(TAG, android.util.Log.DEBUG)) {
+				android.util.Log.d(
+					TAG,
+					"syncFromWebView: urls=${httpUrls.size} cookiesSaved=$saved " +
+						"clearancePresent=${clearance != null} len=${clearance?.length ?: 0}",
+				)
+			}
+			return clearance
 		}
 	}
 }

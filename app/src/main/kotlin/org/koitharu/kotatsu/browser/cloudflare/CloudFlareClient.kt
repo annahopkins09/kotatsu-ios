@@ -5,7 +5,6 @@ import android.os.Handler
 import android.os.Looper
 import android.webkit.CookieManager
 import android.webkit.WebView
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.koitharu.kotatsu.browser.BrowserClient
 import org.koitharu.kotatsu.core.network.cookies.AndroidCookieJar
 import org.koitharu.kotatsu.core.network.cookies.MutableCookieJar
@@ -28,8 +27,9 @@ class CloudFlareClient(
 	private var checkPassedFired = false
 	private var isDisposed = false
 
-	/** Last raw `CookieManager` string already written to the jar, so a quiet poll costs nothing. */
+	/** Last raw `CookieManager` strings already written to the jar, so a quiet poll costs nothing. */
 	private var lastSyncedCookies: String? = null
+	private var lastLiveSyncedCookies: String? = null
 
 	private val cookieCheckRunnable: Runnable = object : Runnable {
 		override fun run() {
@@ -74,6 +74,7 @@ class CloudFlareClient(
 	fun reset() {
 		checkPassedFired = false
 		lastSyncedCookies = null
+		lastLiveSyncedCookies = null
 		handler.removeCallbacks(cookieCheckRunnable)
 	}
 
@@ -136,28 +137,24 @@ class CloudFlareClient(
 	/**
 	 * Pull the cookies the WebView earned into OkHttp's jar.
 	 *
-	 * Parsing goes through [AndroidCookieJar.parseWebViewCookie]. `CookieManager.getCookie` returns
-	 * `name=value` with every attribute stripped, so a bare `Cookie.parse` applies OkHttp's
-	 * default-path rule and files the clearance under a second identity scoped to this challenge
-	 * URL's directory. Both copies then match later requests and both are sent; Cloudflare reads the
-	 * stale one and challenges again — which is why solving here by hand still looped.
+	 * Queries both the challenge URL and the WebView's live URL: after a challenge
+	 * redirect they are often different hosts, and `getCookie` filters by host —
+	 * asking only for [targetUrl] is how a solved clearance stayed invisible.
 	 *
-	 * Called from a poll, so it skips the write (and the flush) while the WebView's cookies are
+	 * Called from a poll, so it skips the write while the WebView's cookies are
 	 * unchanged — otherwise every tick rewrites the persistent jar for nothing.
 	 */
 	private fun syncCookiesFromWebView() {
-		val httpUrl = targetUrl.toHttpUrlOrNull() ?: return
+		val liveUrl = webViewRef?.url
 		val cookieManager = CookieManager.getInstance()
-		val cookieString = cookieManager.getCookie(targetUrl) ?: return
-		if (cookieString == lastSyncedCookies) return
+		val cookieString = runCatching { cookieManager.getCookie(targetUrl) }.getOrNull()
+		val liveString = liveUrl?.takeIf { it != targetUrl }?.let {
+			runCatching { cookieManager.getCookie(it) }.getOrNull()
+		}
+		if (cookieString == lastSyncedCookies && (liveUrl == null || liveString == lastLiveSyncedCookies)) return
 		lastSyncedCookies = cookieString
-		val cookies = cookieString.split(";").mapNotNull { raw ->
-			AndroidCookieJar.parseWebViewCookie(httpUrl, raw)
-		}
-		if (cookies.isNotEmpty()) {
-			cookieJar.saveFromResponse(httpUrl, cookies)
-		}
-		AndroidCookieJar.safeFlush(cookieManager)
+		lastLiveSyncedCookies = liveString
+		AndroidCookieJar.syncFromWebView(cookieJar, targetUrl, liveUrl)
 	}
 
 	private fun getClearance() = CloudFlareHelper.getClearanceCookie(cookieJar, targetUrl)

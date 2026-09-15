@@ -158,8 +158,11 @@ class AutoCaptchaSolver @Inject constructor(
 							}
 						}
 						// Persist and pull clearance back into OkHttp CookieJar.
+						// Include the WebView's live URL: after a challenge redirect it
+						// is often a different host than exception.url, and getCookie
+						// only returns cookies for the host asked about.
 						CookieManager.getInstance().flush()
-						syncCookiesFromWebView(exception.url)
+						syncCookiesFromWebView(exception.url, webView.url)
 					} finally {
 						removeDocumentStartStealth()
 						webView.reset()
@@ -175,6 +178,12 @@ class AutoCaptchaSolver @Inject constructor(
 			if (!clearanceAfter.isNullOrBlank() && clearanceAfter != clearanceBefore) {
 				return@withLock true
 			}
+			android.util.Log.w(
+				TAG,
+				"trySolve attempt $attempt/${MAX_SOLVE_ATTEMPTS} for ${exception.url}: " +
+					"no fresh cf_clearance in jar " +
+					"(hadBefore=${!clearanceBefore.isNullOrBlank()} hasAfter=${!clearanceAfter.isNullOrBlank()})",
+			)
 		}
 		false
 	}
@@ -210,21 +219,13 @@ class AutoCaptchaSolver @Inject constructor(
 	 * Sync cookies from Android WebView CookieManager back to OkHttp CookieJar
 	 * so cf_clearance (and related CF session cookies) are available to network calls.
 	 *
-	 * Goes through [AndroidCookieJar.parseWebViewCookie]: `CookieManager.getCookie` hides every
-	 * attribute, so a bare [Cookie.parse] scopes the cookie to the challenge URL's directory and
-	 * stores a second copy of a cookie that already exists at `/`. Both are then sent in one request
-	 * and Cloudflare rejects the pair.
+	 * Goes through [AndroidCookieJar.syncFromWebView], which queries every given URL:
+	 * [CookieManager.getCookie] filters by host, so clearance set on `www.site.com`
+	 * is invisible when asked only for `site.com`. Always pass the WebView's live URL
+	 * alongside the challenge URL.
 	 */
-	private fun syncCookiesFromWebView(url: String) {
-		val httpUrl = url.toHttpUrlOrNull() ?: return
-		val cookieManager = CookieManager.getInstance()
-		val cookieString = cookieManager.getCookie(url) ?: return
-		val cookies = cookieString.split(";").mapNotNull { raw ->
-			AndroidCookieJar.parseWebViewCookie(httpUrl, raw)
-		}
-		if (cookies.isNotEmpty()) {
-			cookieJar.saveFromResponse(httpUrl, cookies)
-		}
+	private fun syncCookiesFromWebView(vararg urls: String?) {
+		AndroidCookieJar.syncFromWebView(cookieJar, *urls)
 	}
 
 	private suspend fun obtainWebView(): WebView {
@@ -334,6 +335,7 @@ class AutoCaptchaSolver @Inject constructor(
 	}
 
 	companion object {
+		private const val TAG = "CaptchaCookies"
 		/**
 		 * Two, not three. Each attempt costs its full timeout, and a headless WebView that failed the
 		 * same challenge twice is not going to pass it on the third try — it is going to keep the caller

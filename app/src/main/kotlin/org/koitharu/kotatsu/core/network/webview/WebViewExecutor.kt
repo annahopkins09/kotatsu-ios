@@ -33,6 +33,7 @@ import org.koitharu.kotatsu.core.util.ext.configureForParser
 import org.koitharu.kotatsu.core.util.ext.layoutOffscreen
 import org.koitharu.kotatsu.core.util.ext.printStackTraceDebug
 import org.koitharu.kotatsu.parsers.model.MangaSource
+import org.koitharu.kotatsu.parsers.network.CloudFlareHelper
 import org.koitharu.kotatsu.parsers.util.runCatchingCancellable
 import java.lang.ref.WeakReference
 import javax.inject.Inject
@@ -118,10 +119,15 @@ class WebViewExecutor @Inject constructor(
 	}
 
 	suspend fun tryResolveCaptcha(exception: CloudFlareException, timeout: Long): Boolean = mutex.withLock {
+		// A solve is only real if the clearance value actually changes. Resuming the
+		// continuation on page finish alone reported success with no cookie saved,
+		// which retried into another challenge — the same phantom-success loop fixed
+		// in AutoCaptchaSolver.
+		val clearanceBefore = CloudFlareHelper.getClearanceCookie(cookieJar, exception.url)
 		// Retry up to MAX_RESOLVE_ATTEMPTS times with increasing timeout
 		for (attempt in 1..MAX_RESOLVE_ATTEMPTS) {
 			val attemptTimeout = timeout + (attempt - 1) * RETRY_TIMEOUT_INCREMENT
-			val result = runCatchingCancellable {
+			runCatchingCancellable {
 				withContext(Dispatchers.Main.immediate) {
 					val webView = obtainWebView()
 					try {
@@ -143,9 +149,10 @@ class WebViewExecutor @Inject constructor(
 								webView.loadUrl(exception.url)
 							}
 						}
-						// Flush and sync cookies back
+						// Flush and sync cookies back. Include the live URL: after a
+						// challenge redirect it often differs from exception.url.
 						android.webkit.CookieManager.getInstance().flush()
-						syncCookiesFromWebView(exception.url)
+						syncCookiesFromWebView(exception.url, webView.url)
 					} finally {
 						removeDocumentStartStealth()
 						webView.reset()
@@ -157,7 +164,10 @@ class WebViewExecutor @Inject constructor(
 					exception.addSuppressed(e)
 				}
 			}
-			if (result.isSuccess) return@withLock true
+			val clearanceAfter = CloudFlareHelper.getClearanceCookie(cookieJar, exception.url)
+			if (!clearanceAfter.isNullOrBlank() && clearanceAfter != clearanceBefore) {
+				return@withLock true
+			}
 		}
 		false
 	}
@@ -180,20 +190,11 @@ class WebViewExecutor @Inject constructor(
 	 * Sync cookies from Android WebView CookieManager back to OkHttp CookieJar
 	 * to ensure cf_clearance and other session cookies are available.
 	 *
-	 * Parsing goes through [AndroidCookieJar.parseWebViewCookie]: the WebView hides every cookie
-	 * attribute, and a bare parse would store a second copy of the clearance scoped to the challenge
-	 * URL's directory. Two copies in one request is what Cloudflare rejects.
+	 * Queries every given URL: `getCookie` filters by host, so clearance set on a
+	 * redirect host is invisible when asked only for the challenge URL.
 	 */
-	private fun syncCookiesFromWebView(url: String) {
-		val httpUrl = url.toHttpUrlOrNull() ?: return
-		val cookieManager = android.webkit.CookieManager.getInstance()
-		val cookieString = cookieManager.getCookie(url) ?: return
-		val cookies = cookieString.split(";").mapNotNull { raw ->
-			AndroidCookieJar.parseWebViewCookie(httpUrl, raw)
-		}
-		if (cookies.isNotEmpty()) {
-			cookieJar.saveFromResponse(httpUrl, cookies)
-		}
+	private fun syncCookiesFromWebView(vararg urls: String?) {
+		AndroidCookieJar.syncFromWebView(cookieJar, *urls)
 	}
 
 	private suspend fun obtainWebView(): WebView {
